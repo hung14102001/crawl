@@ -1,6 +1,7 @@
+import logging
 import requests
 import threading
-
+import os
 
 url = "https://foursquare.com/user/"
 headers = {
@@ -20,13 +21,26 @@ headers = {
 }
 
 
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
+formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
+
+
+file_handler = logging.FileHandler("crawl.log")
+file_handler.setLevel(logging.DEBUG)
+file_handler.setFormatter(formatter)
+
+logger.addHandler(file_handler)
+
+
 def crawl(start):
     for userID in range(start, start + 1000):
-        with open(str(userID), "w", encoding="UTF-8") as file:
+        output_file = os.path.join("root", "data", str(userID))
+        with open(output_file, "w", encoding="UTF-8") as file:
             url1 = url + str(userID)
             response = requests.request("GET", url1, headers=headers)
             file.write(response.text)
-        print(url1)
+        logger.info(url1)
     file.close()
 
 
@@ -41,6 +55,4 @@ if __name__ == "__main__":
         t.start()
     # Wait for all threads to finish
     for t in threads:
-        print(len(threads))
-
         t.join()
